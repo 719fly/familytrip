@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>恐龍家族 2026 山梨之旅 V26-Stable</title>
+    <title>恐龍家族 2026 山梨之旅</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/dist/css/all.min.css">
@@ -26,7 +26,6 @@
         const db = getDatabase(app);
         const storage = getStorage(app);
 
-        // 資料定義
         const HOME_COORD = "35.824889,138.367139";
         const travelData = [
             { date: "2/17", weekday: "TUE", stay: "姑姑家", stayAddr: HOME_COORD, firstDrive: "2h 47m", firstDist: "225km", events: [{ type: "transport", title: "桃園 ➔ 成田 (TR898)", info: "06:40-10:40", map: "Narita Airport" },{ type: "food", title: "味亞拉麵", map: "35.8304,138.3662" }], lastDrive: "2m", lastDist: "0.8km" },
@@ -43,10 +42,9 @@
         let currentDayIdx = 0;
         let cloudData = {};
 
-        // 監聽 Realtime Database
         onValue(ref(db, 'trips'), (snapshot) => {
             cloudData = snapshot.val() || {};
-            switchDay(currentDayIdx);
+            window.switchDay(currentDayIdx);
         });
 
         window.switchDay = (i) => {
@@ -78,7 +76,7 @@
                 const div = document.createElement('div');
                 div.className = `date-item cursor-pointer ${i === currentDayIdx ? 'active' : ''}`;
                 div.onclick = () => window.switchDay(i);
-                div.innerHTML = `<div class="text-[10px] font-bold uppercase">${day.weekday}</div><div class="text-xl serif mt-1">${day.date.split('/')[1]}</div><div class="active-dot"></div>`;
+                div.innerHTML = `<div class="text-[10px] font-bold">DAY ${i+1}</div><div class="text-xl serif mt-1">${day.date.split('/')[1]}</div><div class="active-dot"></div>`;
                 nav.appendChild(div);
             });
         }
@@ -123,9 +121,7 @@
                 <div class="bg-white p-6 rounded-3xl mb-8 border border-gray-100 shadow-inner">
                     <textarea id="note-input" onblur="window.saveNote('${id}', this.value)" placeholder="全家人的旅遊筆記..." class="w-full h-40 bg-transparent outline-none text-sm resize-none leading-relaxed">${data.note || ''}</textarea>
                 </div>
-                <div class="grid grid-cols-1 gap-6">
-                    ${(data.photos || []).map(url => `<img src="${url}" class="w-full rounded-3xl shadow-lg">`).join('')}
-                </div>
+                <div class="grid grid-cols-1 gap-6">${(data.photos || []).map(url => `<img src="${url}" class="w-full rounded-3xl shadow-lg">`).join('')}</div>
             `;
             document.getElementById('modal').style.display = 'block';
         };
@@ -157,12 +153,14 @@
 
         window.openDailyRoute = () => {
             const day = travelData[currentDayIdx];
-            const origin = currentDayIdx === 0 ? "Narita Airport" : currentIdx === 4 ? "36.6713,138.4069" : HOME_COORD;
-            window.open(`https://www.google.com/maps/dir/${encodeURIComponent(origin)}/${day.events.map(e=>encodeURIComponent(e.map)).join('/')}/${encodeURIComponent(day.stayAddr)}`, '_blank');
+            const origin = currentDayIdx === 0 ? "Narita Airport" : currentDayIdx === 4 ? "36.6713,138.4069" : HOME_COORD;
+            const waypoints = day.events.map(e => encodeURIComponent(e.map)).join('/');
+            const url = `https://www.google.com/maps/dir/${encodeURIComponent(origin)}/${waypoints}/${encodeURIComponent(day.stayAddr)}`;
+            window.open(url, '_blank');
         };
 
         window.closeModal = () => document.getElementById('modal').style.display = 'none';
-        init();
+        window.switchDay(0);
     </script>
 
     <style>
@@ -172,6 +170,12 @@
         .date-nav::-webkit-scrollbar { display: none; }
         .date-item.active { transform: scale(1.1); font-weight: 900; color: var(--ink); }
         .date-item.active .active-dot { background: var(--food-border); width: 4px; height: 4px; border-radius: 50%; margin: 4px auto 0; }
+        
+        .type-sightseeing { border-left-color: var(--sightseeing-border); }
+        .type-food { border-left-color: var(--food-border); }
+        .type-transport { border-left-color: var(--transport-border); }
+        .type-stay { border-left-color: var(--stay-border); }
+        
         .map-overlay { background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80'); background-size: cover; }
         .drive-info { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 11px; color: #999; margin: 15px 0; }
         .drive-info hr { flex-grow: 1; border: 0; border-top: 1px dashed #ccc; }
@@ -181,14 +185,14 @@
 </head>
 <body class="pb-24">
     <header class="bg-white/95 sticky top-0 z-50 pt-12 pb-6 border-b border-gray-100 text-center">
-        <div class="inline-block bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-[10px] font-bold mb-2">2026.02 Cloud-Stable</div>
+        <div class="inline-block bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-[10px] font-bold mb-2">2026.02</div>
         <h1 class="serif text-3xl mb-8">恐龍家族山梨之旅</h1>
-        <div id="date-nav" class="date-nav flex overflow-x-auto px-6 gap-4"></div>
+        <div id="date-nav" class="date-nav flex justify-center overflow-x-auto px-6 gap-4"></div>
     </header>
     <main class="px-6 mt-6">
-        <div onclick="window.openDailyRoute()" class="w-full h-48 rounded-[2.5rem] map-overlay shadow-lg mb-8 flex flex-col items-center justify-center text-white cursor-pointer border-4 border-white">
+        <div onclick="window.openDailyRoute()" class="w-full h-48 rounded-[2.5rem] map-overlay shadow-lg mb-8 flex flex-col items-center justify-center text-white cursor-pointer border-4 border-white text-center">
             <i class="fa-solid fa-route text-4xl mb-2"></i>
-            <span class="font-bold text-sm bg-black/40 px-5 py-1.5 rounded-full text-center">查看今日完整路徑</span>
+            <span class="font-bold text-sm bg-black/40 px-5 py-1.5 rounded-full">查看今日完整路徑</span>
         </div>
         <div id="events-list"></div>
     </main>
