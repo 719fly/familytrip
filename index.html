@@ -3,168 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>恐龍家族 2026 山梨之旅 V24</title>
+    <title>恐龍家族 2026 山梨之旅 V26-Stable</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/dist/css/all.min.css">
-    <style>
-        :root { 
-            --bg: #f9f7f2; --ink: #1a1a1a; --gray-btn: #f0f0f0; 
-            --sightseeing-bg: #f1f3f0; --sightseeing-border: #6b705c;
-            --food-bg: #fff5f5; --food-border: #a52a2a;
-            --transport-bg: #f0f4f8; --transport-border: #4a5568;
-            --stay-bg: #fff9eb; --stay-border: #d4a373;
-        }
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
-        .serif { font-family: 'Noto Serif TC', serif; }
-        .date-nav::-webkit-scrollbar { display: none; }
-        .date-item { flex: 0 0 65px; text-align: center; color: #ccc; transition: 0.3s; }
-        .date-item.active { color: var(--ink); transform: scale(1.1); font-weight: 900; }
-        .date-item.active .active-dot { background: var(--food-border); width: 4px; height: 4px; border-radius: 50%; margin: 4px auto 0; }
-        
-        .card-type { border-left: 6px solid transparent; border-radius: 2rem; overflow: hidden; margin-bottom: 1.5rem; background: #fff; position: relative; }
-        .type-sightseeing { border-left-color: var(--sightseeing-border); background-color: var(--sightseeing-bg); }
-        .type-food { border-left-color: var(--food-border); background-color: var(--food-bg); }
-        .type-transport { border-left-color: var(--transport-border); background-color: var(--transport-bg); }
-        .type-stay { border-left-color: var(--stay-border); background-color: var(--stay-bg); }
-        
-        .btn-gray { background-color: var(--gray-btn); color: var(--ink); border-radius: 12px; font-weight: 700; border: none; transition: 0.2s; height: 50px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-gray:active { background: #e0e0e0; transform: scale(0.98); }
-        
-        .map-overlay { background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80'); background-size: cover; background-position: center; }
-        .drive-info { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 11px; color: #999; margin: 15px 0; }
-        .drive-info hr { flex-grow: 1; border: 0; border-top: 1px dashed #ccc; }
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getStorage, ref as sRef, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; backdrop-filter: blur(8px); }
-        .modal-content { background: var(--bg); height: 90vh; margin-top: 10vh; border-radius: 32px 32px 0 0; padding: 24px; overflow-y: auto; }
-        
-        .img-wrapper { position: relative; width: 75px; height: 75px; flex-shrink: 0; margin-right: 8px; }
-        .thumb-img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; border: 2px solid white; }
-        .del-badge { position: absolute; top: -10px; right: -10px; background: #ff4d4f; color: white; border-radius: 50%; width: 26px; height: 26px; font-size: 18px; display: flex; align-items: center; justify-content: center; border: 2px solid white; cursor: pointer; z-index: 99; font-weight: bold; }
-    </style>
-</head>
-<body class="pb-10">
+        const firebaseConfig = {
+            apiKey: "AIzaSyAxETK85FUVrBMKCAIKbN6N2wg1oh0gUAo",
+            authDomain: "familytrip2026-d4dca.firebaseapp.com",
+            projectId: "familytrip2026-d4dca",
+            storageBucket: "familytrip2026-d4dca.firebasestorage.app",
+            messagingSenderId: "1083192073417",
+            appId: "1:1083192073417:web:93cc5fb53392323fed4118"
+        };
 
-    <header class="bg-white/95 sticky top-0 z-50 pt-12 pb-6 border-b border-gray-100 text-center">
-        <div class="inline-block bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-[10px] font-bold mb-2">2026.02</div>
-        <h1 class="serif text-3xl mb-8 text-ink">恐龍家族山梨之旅</h1>
-        <div id="date-nav" class="date-nav flex overflow-x-auto px-6 gap-4"></div>
-    </header>
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const storage = getStorage(app);
 
-    <main class="px-6 mt-6">
-        <div onclick="openDailyRoute()" class="w-full h-48 rounded-[2.5rem] map-overlay shadow-lg mb-8 flex flex-col items-center justify-center text-white cursor-pointer border-4 border-white">
-            <i class="fa-solid fa-map-location-dot text-4xl mb-2"></i>
-            <span class="font-bold text-sm bg-black/40 px-5 py-1.5 rounded-full text-center">查看今日導航路徑</span>
-        </div>
-        <div id="events-list"></div>
-    </main>
-
-    <div id="modal" onclick="closeModal()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-8"></div>
-            <div id="modal-body"></div>
-        </div>
-    </div>
-
-    <script>
+        // 資料定義
         const HOME_COORD = "35.824889,138.367139";
         const travelData = [
-            { date: "2/17", weekday: "TUE", stay: "姑姑家", stayAddr: HOME_COORD, firstDrive: "2h 47m", firstDist: "225km",
-              events: [
-                { type: "transport", title: "桃園 ➔ 成田 (TR898)", info: "06:40-10:40", map: "Narita Airport" },
-                { type: "food", title: "味亞拉麵", map: "35.8304,138.3662" }
-              ], lastDrive: "2m", lastDist: "0.8km"
-            },
-            { date: "2/18", weekday: "WED", stay: "姑姑家", stayAddr: HOME_COORD, firstDrive: "34m", firstDist: "31.7km",
-              events: [
-                { type: "sightseeing", title: "舞鶴城公園", map: "舞鶴城公園", drive: "10m", dist: "5km" },
-                { type: "food", title: "五味餅菓子店", map: "五味餅菓子店", drive: "10m", dist: "3km" },
-                { type: "food", title: "雞そば akari", map: "鶏そばAkari" }
-              ], lastDrive: "15m", lastDist: "12km"
-            },
-            { date: "2/19", weekday: "THU", stay: "姑姑家", stayAddr: HOME_COORD, firstDrive: "21m", firstDist: "16.2km",
-              events: [
-                { type: "sightseeing", title: "萌木之村", map: "萌木之村", drive: "5m", dist: "3km" },
-                { type: "food", title: "ROCK 餐廳", map: "Moeginomura ROCK", drive: "5m", dist: "1km" },
-                { type: "food", title: "清里ジャム 咖啡廳", map: "清里ジャム", drive: "25m", dist: "18km" },
-                { type: "food", title: "丸政そば 蕎麥麵", map: "丸政そば 長坂店" }
-              ], lastDrive: "8m", lastDist: "4km"
-            },
-            { date: "2/20", weekday: "FRI", stay: "姑姑家", stayAddr: HOME_COORD, firstDrive: "1h 24m", firstDist: "95km",
-              events: [
-                { type: "food", title: "金とき (靜岡)", map: "金とき 若松町本店", drive: "25m", dist: "15km" },
-                { type: "sightseeing", title: "arinko farm 採草莓", map: "Arinko Farm", drive: "35m", dist: "25km" },
-                { type: "sightseeing", title: "三保松原", map: "三保松原", drive: "30m", dist: "20km" },
-                { type: "sightseeing", title: "吳服町名店街", map: "靜岡吳服町", drive: "5m", dist: "2km" },
-                { type: "food", title: "nanaya 冰淇淋", map: "ななや 靜岡店", drive: "15m", dist: "10km" },
-                { type: "food", title: "tsukanto 炸豬排", map: "tsukanto 靜岡" }
-              ], lastDrive: "1h 45m", lastDist: "110km"
-            },
-            { date: "2/21", weekday: "SAT", stay: "旅館わらび野", stayAddr: "36.6713,138.4069", firstDrive: "55m", firstDist: "73.5km",
-              events: [
-                { type: "food", title: "簗之鰻觀光莊 松本店", map: "簗之鰻觀光莊", drive: "30m", dist: "22km" },
-                { type: "sightseeing", title: "大王山葵農場", map: "大王わさび農場", drive: "20m", dist: "15km" },
-                { type: "food", title: "北アルプス牧場直売店", map: "北アルプス牧場" }
-              ], lastDrive: "1h 10m", lastDist: "65km"
-            },
-            { date: "2/22", weekday: "SUN", stay: "姑姑家", stayAddr: HOME_COORD, firstDrive: "1h 38m", firstDist: "130km",
-              events: [
-                { type: "sightseeing", title: "地獄谷野猴溫泉", map: "地獄谷野猿公苑", drive: "1h 50m", dist: "135km" },
-                { type: "sightseeing", title: "諏訪湖", map: "諏訪湖", drive: "55m", dist: "50km" },
-                { type: "sightseeing", title: "好市多 南阿爾卑斯店", map: "Costco Minami Alpus" }
-              ], lastDrive: "40m", lastDist: "30km"
-            },
-            { date: "2/23", weekday: "MON", stay: "姑姑家", stayAddr: HOME_COORD, firstDrive: "30m", firstDist: "22km",
-              events: [
-                { type: "food", title: "蘇州拉麵", map: "ラーメン蘇洲 須玉町", drive: "20m", dist: "14km" },
-                { type: "sightseeing", title: "Taiho Futaba", map: "Taiho Futaba", drive: "15m", dist: "10km" },
-                { type: "sightseeing", title: "笛吹川水果公園", map: "笛吹川フルーツ公園", drive: "5m", dist: "2km" },
-                { type: "sightseeing", title: "Fruit Spa PukuPuku 泡湯", map: "ぷくぷく溫泉" }
-              ], lastDrive: "50m", lastDist: "45km"
-            },
-            { date: "2/24", weekday: "TUE", stay: "姑姑家", stayAddr: HOME_COORD, firstDrive: "1h 31m", firstDist: "117km",
-              events: [
-                { type: "food", title: "Junchan Sushi", map: "じゅんちゃん寿司", drive: "15m", dist: "10km" },
-                { type: "food", title: "TOKYO FARM VILLAGE", map: "TOKYO FARM VILLAGE", drive: "10m", dist: "6km" },
-                { type: "food", title: "パペルブルグ (咖啡廳)", map: "PAPPELBURG", drive: "20m", dist: "15km" },
-                { type: "food", title: "ひな鳥山 (預約 16:00)", map: "ひな鳥山" }
-              ], lastDrive: "1h 10m", lastDist: "75km"
-            },
-            { date: "2/25", weekday: "WED", stay: "回程", stayAddr: "成田機場",
-              events: [ { type: "transport", title: "泰國獅子航空 SL395", info: "17:15-20:20", map: "Narita Airport" } ]
-            }
+            { date: "2/17", weekday: "TUE", stay: "姑姑家", stayAddr: HOME_COORD, firstDrive: "2h 47m", firstDist: "225km", events: [{ type: "transport", title: "桃園 ➔ 成田 (TR898)", info: "06:40-10:40", map: "Narita Airport" },{ type: "food", title: "味亞拉麵", map: "35.8304,138.3662" }], lastDrive: "2m", lastDist: "0.8km" },
+            { date: "2/18", weekday: "WED", stay: "姑姑家", stayAddr: HOME_COORD, firstDrive: "34m", firstDist: "31.7km", events: [{ type: "sightseeing", title: "舞鶴城公園", map: "舞鶴城公園", drive: "10m", dist: "5km" },{ type: "food", title: "五味餅菓子店", map: "五味餅菓子店", drive: "10m", dist: "3km" },{ type: "food", title: "雞そば akari", map: "鶏そばAkari" }], lastDrive: "15m", lastDist: "12km" },
+            { date: "2/19", weekday: "THU", stay: "姑姑家", stayAddr: HOME_COORD, firstDrive: "21m", firstDist: "16.2km", events: [{ type: "sightseeing", title: "萌木之村", map: "萌木之村", drive: "5m", dist: "3km" },{ type: "food", title: "ROCK 餐廳", map: "Moeginomura ROCK", drive: "5m", dist: "1km" },{ type: "food", title: "清里ジャム 咖啡廳", map: "清里ジャム", drive: "25m", dist: "18km" },{ type: "food", title: "丸政そば 蕎麥麵", map: "丸政そば 長坂店" }], lastDrive: "8m", lastDist: "4km" },
+            { date: "2/20", weekday: "FRI", stay: "姑姑家", stayAddr: HOME_COORD, firstDrive: "1h 24m", firstDist: "95km", events: [{ type: "food", title: "金とき (靜岡)", map: "金とき 若松町本店", drive: "25m", dist: "15km" },{ type: "sightseeing", title: "arinko farm 採草莓", map: "Arinko Farm", drive: "35m", dist: "25km" },{ type: "sightseeing", title: "三保松原", map: "三保松原", drive: "30m", dist: "20km" },{ type: "sightseeing", title: "吳服町名店街", map: "靜岡吳服町", drive: "5m", dist: "2km" },{ type: "food", title: "nanaya 冰淇淋", map: "ななや 靜岡店", drive: "15m", dist: "10km" },{ type: "food", title: "tsukanto 炸豬排", map: "tsukanto 靜岡" }], lastDrive: "1h 45m", lastDist: "110km" },
+            { date: "2/21", weekday: "SAT", stay: "旅館わらび野", stayAddr: "36.6713,138.4069", firstDrive: "55m", firstDist: "73.5km", events: [{ type: "food", title: "簗之鰻觀光莊 松本店", map: "簗之鰻觀光莊", drive: "30m", dist: "22km" },{ type: "sightseeing", title: "大王山葵農場", map: "大王わさび農場", drive: "20m", dist: "15km" },{ type: "food", title: "北アルプス牧場直売店", map: "北アルプス牧場" }], lastDrive: "1h 10m", lastDist: "65km" },
+            { date: "2/22", weekday: "SUN", stay: "姑姑家", stayAddr: HOME_COORD, firstDrive: "1h 38m", firstDist: "130km", events: [{ type: "sightseeing", title: "地獄谷野猴溫泉", map: "地獄谷野猿公苑", drive: "1h 50m", dist: "135km" },{ type: "sightseeing", title: "諏訪湖", map: "諏訪湖", drive: "55m", dist: "50km" },{ type: "sightseeing", title: "好市多 南阿爾卑斯店", map: "Costco Minami Alpus" }], lastDrive: "40m", lastDist: "30km" },
+            { date: "2/23", weekday: "MON", stay: "姑姑家", stayAddr: HOME_COORD, firstDrive: "30m", firstDist: "22km", events: [{ type: "food", title: "蘇州拉麵", map: "ラーメン蘇洲 須玉町", drive: "20m", dist: "14km" },{ type: "sightseeing", title: "Taiho Futaba", map: "Taiho Futaba", drive: "15m", dist: "10km" },{ type: "sightseeing", title: "笛吹川水果公園", map: "笛吹川フルーツ公園", drive: "5m", dist: "2km" },{ type: "sightseeing", title: "Fruit Spa PukuPuku 泡湯", map: "ぷくぷく溫泉" }], lastDrive: "50m", lastDist: "45km" },
+            { date: "2/24", weekday: "TUE", stay: "姑姑家", stayAddr: HOME_COORD, firstDrive: "1h 31m", firstDist: "117km", events: [{ type: "food", title: "Junchan Sushi", map: "じゅんちゃん寿司", drive: "15m", dist: "10km" },{ type: "food", title: "TOKYO FARM VILLAGE", map: "TOKYO FARM VILLAGE", drive: "10m", dist: "6km" },{ type: "food", title: "パペルブルグ (咖啡廳)", map: "PAPPELBURG", drive: "20m", dist: "15km" },{ type: "food", title: "ひ那鳥山 (流水席 16:00)", map: "ひ那鳥山" }], lastDrive: "1h 10m", lastDist: "75km" },
+            { date: "2/25", weekday: "WED", stay: "回程", stayAddr: "Narita Airport", events: [{ type: "transport", title: "泰國獅子航空 SL395", info: "17:15-20:20", map: "Narita Airport" }] }
         ];
 
-        let currentIdx = 0;
+        let currentDayIdx = 0;
+        let cloudData = {};
 
-        function init() { renderNav(); switchDay(0); }
+        // 監聽 Realtime Database
+        onValue(ref(db, 'trips'), (snapshot) => {
+            cloudData = snapshot.val() || {};
+            switchDay(currentDayIdx);
+        });
 
-        function renderNav() {
-            const nav = document.getElementById('date-nav');
-            nav.innerHTML = '';
-            travelData.forEach((day, i) => {
-                const div = document.createElement('div');
-                div.className = `date-item cursor-pointer`;
-                div.id = `nav-${i}`;
-                div.onclick = () => switchDay(i);
-                div.innerHTML = `<div class="text-[10px] font-bold uppercase">${day.weekday}</div><div class="text-xl serif mt-1">${day.date.split('/')[1]}</div><div class="active-dot"></div>`;
-                nav.appendChild(div);
-            });
-        }
-
-        function switchDay(i) {
-            currentIdx = i;
-            document.querySelectorAll('.date-item').forEach(el => el.classList.remove('active'));
-            const activeNav = document.getElementById(`nav-${i}`);
-            if(activeNav) activeNav.classList.add('active');
-
+        window.switchDay = (i) => {
+            currentDayIdx = i;
+            renderNav();
             const list = document.getElementById('events-list');
             list.innerHTML = '';
             const day = travelData[i];
 
             if(day.firstDrive) {
-                const originText = (i === 0) ? "成田機場" : "前日下榻處";
-                list.innerHTML += `<div class="drive-info"><hr><i class="fa-solid fa-car"></i> 🚗 ${originText} ➔ 第一站約 ${day.firstDrive} (${day.firstDist})<hr></div>`;
+                list.innerHTML += `<div class="drive-info"><hr><i class="fa-solid fa-car"></i> 🚗 ${i === 0 ? "成田機場" : "前日下榻"} ➔ 第一站約 ${day.firstDrive} (${day.firstDist})<hr></div>`;
             }
 
             day.events.forEach((ev, evIdx) => {
@@ -176,108 +69,134 @@
                 list.innerHTML += `<div class="drive-info"><hr><i class="fa-solid fa-house"></i> 🏠 返回下榻處約 ${day.lastDrive} (${day.lastDist})<hr></div>`;
                 renderCard(list, { type: "stay", title: `今日下榻：${day.stay}`, map: day.stayAddr }, i, 99);
             }
-            window.scrollTo(0,0);
+        };
+
+        function renderNav() {
+            const nav = document.getElementById('date-nav');
+            nav.innerHTML = '';
+            travelData.forEach((day, i) => {
+                const div = document.createElement('div');
+                div.className = `date-item cursor-pointer ${i === currentDayIdx ? 'active' : ''}`;
+                div.onclick = () => window.switchDay(i);
+                div.innerHTML = `<div class="text-[10px] font-bold uppercase">${day.weekday}</div><div class="text-xl serif mt-1">${day.date.split('/')[1]}</div><div class="active-dot"></div>`;
+                nav.appendChild(div);
+            });
         }
 
         function renderCard(container, ev, dIdx, eIdx) {
-            const photoKey = `photo_${dIdx}_${eIdx}`;
-            const imgs = JSON.parse(localStorage.getItem(photoKey) || '[]');
+            const id = `${dIdx}_${eIdx}`;
+            const data = cloudData[id] || { photos: [], note: "" };
             const div = document.createElement('div');
-            div.className = `card-type p-6 type-${ev.type || 'sightseeing'}`;
-
+            div.className = `card-type p-6 type-${ev.type || 'sightseeing'} shadow-sm bg-white rounded-[2rem] border-l-[6px] mb-6`;
+            
             let imgsHtml = '';
-            if(imgs.length > 0) {
-                imgsHtml = `<div class="flex mt-4 overflow-x-auto pb-2">`;
-                imgs.forEach((src, idx) => {
-                    imgsHtml += `<div class="img-wrapper">
-                                    <img src="${src}" class="thumb-img">
-                                    <div class="del-badge" onclick="event.stopPropagation(); deleteImg(${dIdx}, ${eIdx}, ${idx})">×</div>
-                                 </div>`;
+            if(data.photos && data.photos.length > 0) {
+                imgsHtml = `<div class="flex gap-2 mt-4 overflow-x-auto pb-2">`;
+                data.photos.forEach((url, idx) => {
+                    imgsHtml += `<div class="relative w-20 h-20 flex-shrink-0">
+                        <img src="${url}" class="w-full h-full object-cover rounded-xl border-2 border-white shadow-sm">
+                        <div class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center border-2 border-white cursor-pointer" onclick="event.stopPropagation(); window.deletePhoto('${id}', ${idx})">×</div>
+                    </div>`;
                 });
                 imgsHtml += `</div>`;
             }
 
             div.innerHTML = `
-                <div onclick="openModal(${eIdx})">
-                    <div class="flex justify-between items-start mb-2">
-                        <p class="text-[9px] font-black uppercase opacity-30 tracking-widest">${ev.type || 'sightseeing'}</p>
-                        <i class="fa-solid fa-chevron-right text-[10px] text-gray-200"></i>
-                    </div>
+                <div onclick="window.openModal('${id}', '${ev.title}')">
+                    <p class="text-[9px] font-black uppercase opacity-30 tracking-widest">${ev.type || 'sightseeing'}</p>
                     <h4 class="serif text-xl font-bold">${ev.title}</h4>
                     ${ev.info ? `<p class="text-xs text-red-600 font-bold mt-1">${ev.info}</p>` : ''}
                     ${imgsHtml}
                 </div>
                 <div class="flex gap-2 mt-6">
-                    <button onclick="window.open('https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.map)}')" class="btn-gray flex-1 text-[13px]"><i class="fa-solid fa-location-arrow"></i> 導航</button>
-                    <label class="btn-gray flex-1 text-[13px] cursor-pointer"><i class="fa-solid fa-camera"></i> 上傳照片<input type="file" accept="image/*" class="hidden" onchange="uploadPhoto(this, ${eIdx})"></label>
+                    <button onclick="window.open('https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.map)}')" class="btn-gray flex-1 bg-gray-100 py-4 rounded-2xl text-[13px] font-bold"><i class="fa-solid fa-location-arrow"></i> 導航</button>
+                    <label class="btn-gray flex-1 bg-gray-100 py-4 rounded-2xl text-[13px] font-bold text-center cursor-pointer"><i class="fa-solid fa-camera"></i> 上傳照片<input type="file" accept="image/*" class="hidden" onchange="window.uploadPhoto(this, '${id}')"></label>
                 </div>
             `;
             container.appendChild(div);
         }
 
-        function deleteImg(dIdx, eIdx, iIdx) {
-            if(!confirm("確定要刪除這張照片嗎？")) return;
-            const key = `photo_${dIdx}_${eIdx}`;
-            let imgs = JSON.parse(localStorage.getItem(key) || '[]');
-            imgs.splice(iIdx, 1);
-            localStorage.setItem(key, JSON.stringify(imgs));
-            // 強制延遲後刷新介面，防止瀏覽器緩存 UI
-            setTimeout(() => { switchDay(currentIdx); }, 50);
-        }
-
-        function openModal(eIdx) {
-            const day = travelData[currentIdx];
-            const ev = eIdx === 99 ? { title: `今日下榻：${day.stay}` } : day.events[eIdx];
-            const key = `photo_${currentIdx}_${eIdx}`;
-            const imgs = JSON.parse(localStorage.getItem(key) || '[]');
-            const note = localStorage.getItem(`note_${currentIdx}_${eIdx}`) || '';
-            
+        window.openModal = (id, title) => {
+            const data = cloudData[id] || { photos: [], note: "" };
             document.getElementById('modal-body').innerHTML = `
-                <h2 class="serif text-3xl font-black mb-6 text-ink">${ev.title}</h2>
+                <h2 class="serif text-3xl font-black mb-6">${title}</h2>
                 <div class="bg-white p-6 rounded-3xl mb-8 border border-gray-100 shadow-inner">
-                    <textarea id="note-input" oninput="saveNote(${eIdx})" placeholder="寫下值得紀錄的時刻..." class="w-full h-40 bg-transparent outline-none text-sm resize-none leading-relaxed text-gray-700">${note}</textarea>
+                    <textarea id="note-input" onblur="window.saveNote('${id}', this.value)" placeholder="全家人的旅遊筆記..." class="w-full h-40 bg-transparent outline-none text-sm resize-none leading-relaxed">${data.note || ''}</textarea>
                 </div>
                 <div class="grid grid-cols-1 gap-6">
-                    ${imgs.map((src, idx) => `
-                        <div class="relative">
-                            <img src="${src}" class="w-full h-auto rounded-3xl shadow-lg border-4 border-white">
-                            <button onclick="deleteImg(${currentIdx}, ${eIdx}, ${idx}); closeModal();" class="w-full mt-3 py-4 text-sm text-red-500 font-bold bg-white border border-red-100 rounded-2xl active:bg-red-50">🗑️ 刪除此回憶照片</button>
-                        </div>`).join('')}
+                    ${(data.photos || []).map(url => `<img src="${url}" class="w-full rounded-3xl shadow-lg">`).join('')}
                 </div>
             `;
             document.getElementById('modal').style.display = 'block';
-        }
+        };
 
-        function saveNote(eIdx) { localStorage.setItem(`note_${currentIdx}_${eIdx}`, document.getElementById('note-input').value); }
-        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+        window.saveNote = (id, val) => {
+            const data = cloudData[id] || { photos: [], note: "" };
+            set(ref(db, 'trips/' + id), { ...data, note: val });
+        };
 
-        async function uploadPhoto(input, eIdx) {
+        window.uploadPhoto = async (input, id) => {
             const file = input.files[0]; if(!file) return;
             const reader = new FileReader(); reader.readAsDataURL(file);
-            reader.onload = (e) => {
-                const img = new Image(); img.src = e.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas'); const MAX_W = 800;
-                    canvas.width = MAX_W; canvas.height = img.height * (MAX_W / img.width);
-                    const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    const key = `photo_${currentIdx}_${eIdx}`;
-                    let imgs = JSON.parse(localStorage.getItem(key) || '[]');
-                    imgs.push(canvas.toDataURL('image/jpeg', 0.7));
-                    localStorage.setItem(key, JSON.stringify(imgs));
-                    switchDay(currentIdx);
-                };
+            reader.onload = async (e) => {
+                const storageRef = sRef(storage, `photos/${id}_${Date.now()}.jpg`);
+                await uploadString(storageRef, e.target.result, 'data_url');
+                const url = await getDownloadURL(storageRef);
+                const data = cloudData[id] || { photos: [], note: "" };
+                const updatedPhotos = data.photos ? [...data.photos, url] : [url];
+                set(ref(db, 'trips/' + id), { ...data, photos: updatedPhotos });
             };
-        }
+        };
 
-        function openDailyRoute() {
-            const day = travelData[currentIdx];
-            const origin = (currentIdx === 0) ? "Narita Airport" : (currentIdx === 4) ? "36.6713,138.4069" : HOME_COORD;
-            const waypoints = day.events.map(e => encodeURIComponent(e.map)).join('/');
-            const url = `https://www.google.com/maps/dir/${encodeURIComponent(origin)}/${waypoints}/${encodeURIComponent(day.stayAddr)}`;
-            window.open(url, '_blank');
-        }
+        window.deletePhoto = (id, idx) => {
+            if(!confirm("刪除照片？")) return;
+            const data = cloudData[id];
+            data.photos.splice(idx, 1);
+            set(ref(db, 'trips/' + id), data);
+        };
 
+        window.openDailyRoute = () => {
+            const day = travelData[currentDayIdx];
+            const origin = currentDayIdx === 0 ? "Narita Airport" : currentIdx === 4 ? "36.6713,138.4069" : HOME_COORD;
+            window.open(`https://www.google.com/maps/dir/${encodeURIComponent(origin)}/${day.events.map(e=>encodeURIComponent(e.map)).join('/')}/${encodeURIComponent(day.stayAddr)}`, '_blank');
+        };
+
+        window.closeModal = () => document.getElementById('modal').style.display = 'none';
         init();
     </script>
+
+    <style>
+        :root { --bg: #f9f7f2; --ink: #1a1a1a; --food-border: #a52a2a; --sightseeing-border: #6b705c; --transport-border: #4a5568; --stay-border: #d4a373; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg); color: var(--ink); }
+        .serif { font-family: 'Noto Serif TC', serif; }
+        .date-nav::-webkit-scrollbar { display: none; }
+        .date-item.active { transform: scale(1.1); font-weight: 900; color: var(--ink); }
+        .date-item.active .active-dot { background: var(--food-border); width: 4px; height: 4px; border-radius: 50%; margin: 4px auto 0; }
+        .map-overlay { background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80'); background-size: cover; }
+        .drive-info { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 11px; color: #999; margin: 15px 0; }
+        .drive-info hr { flex-grow: 1; border: 0; border-top: 1px dashed #ccc; }
+        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; backdrop-filter: blur(8px); }
+        .modal-content { background: var(--bg); height: 90vh; margin-top: 10vh; border-radius: 32px 32px 0 0; padding: 24px; overflow-y: auto; }
+    </style>
+</head>
+<body class="pb-24">
+    <header class="bg-white/95 sticky top-0 z-50 pt-12 pb-6 border-b border-gray-100 text-center">
+        <div class="inline-block bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-[10px] font-bold mb-2">2026.02 Cloud-Stable</div>
+        <h1 class="serif text-3xl mb-8">恐龍家族山梨之旅</h1>
+        <div id="date-nav" class="date-nav flex overflow-x-auto px-6 gap-4"></div>
+    </header>
+    <main class="px-6 mt-6">
+        <div onclick="window.openDailyRoute()" class="w-full h-48 rounded-[2.5rem] map-overlay shadow-lg mb-8 flex flex-col items-center justify-center text-white cursor-pointer border-4 border-white">
+            <i class="fa-solid fa-route text-4xl mb-2"></i>
+            <span class="font-bold text-sm bg-black/40 px-5 py-1.5 rounded-full text-center">查看今日完整路徑</span>
+        </div>
+        <div id="events-list"></div>
+    </main>
+    <div id="modal" onclick="window.closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-8"></div>
+            <div id="modal-body"></div>
+        </div>
+    </div>
 </body>
 </html>
